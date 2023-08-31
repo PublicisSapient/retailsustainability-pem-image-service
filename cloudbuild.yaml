@@ -1,0 +1,42 @@
+steps:
+  - name: gcr.io/cloud-builders/git
+    entrypoint: /bin/sh
+    args: ['-c', "git clone https://$${USERNAME}:$${GIT_TOKEN}@github.com/PublicisSapient/retailsustainability-pem-image-service.git -b main"]
+    secretEnv:
+      - GIT_TOKEN
+      - USERNAME
+  - name: 'maven:3.6.3-openjdk-17'
+    args:
+      - '-c'
+      - |
+        cd common-framework && mvn install
+    entrypoint: /bin/sh
+  - name: 'maven:3.6.3-openjdk-17'
+    args:
+      - '-c'
+      - >-
+        cd common-framework && mvn install:install-file
+        -Dfile=target/common-framework-1.0-SNAPSHOT.jar && cd .. && mvn package
+    entrypoint: /bin/sh
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/sap-p2p-marketplace-dev-mg/pem-artifact-registry/image-service:$COMMIT_SHA'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+     - 'push'
+     - 'asia-south1-docker.pkg.dev/sap-p2p-marketplace-dev-mg/pem-artifact-registry/image-service:$COMMIT_SHA'
+  - name: 'asia-south1-docker.pkg.dev/sap-p2p-marketplace-dev-mg/pem-artifact-registry/helm'
+    args: ['upgrade', '--install', 'image', './infra/helm/image', '--set', 'image.tag=$COMMIT_SHA', '--namespace', 'pem']
+    env: ['CLOUDSDK_COMPUTE_ZONE=asia-south1-a', 'CLOUDSDK_CONTAINER_CLUSTER=pem-cluster']
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/PROJECT_ID/secrets/GIT_TOKEN_SECRET_NAME/versions/GIT_TOKEN_SECRET_VERSION 
+      env: GIT_TOKEN
+    - versionName:  projects/PROJECT_ID/secrets/GIT_USERNAME_SECRET_NAME/versions/GIT_USERNAME_SECRET_VERSION
+      env: USERNAME

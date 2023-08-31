@@ -1,0 +1,45 @@
+server:
+  port: 9002
+  servlet:
+    context-path: /api/v1/image-service
+
+spring:
+  application:
+    name: image-service
+  data:
+    mongodb:
+      uri: mongodb://root:${mongodb-root-password}@${MONGODB_SERVICE_HOST}:${MONGODB_SERVICE_PORT}
+      database: p2p
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 10MB
+  cloud:
+    image:
+      minSize: 0001
+      maxSize: 3248576
+    project-id: sap-p2p-marketplace-dev-mg
+    bucket-name: p2p-product-images-dev
+    folder-name-product: product/
+    folder-name-homeBanner: homebanner/
+    image-url: https://storage.googleapis.com/p2p-product-images-dev/
+
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /rest-api-docs
+  swagger-ui:
+    path: /swagger-ui
+
+secret: mvpp2p
+errorMsgMap:
+  ERR_DETAIL_NOT_FOUND: "Details could not be found. {0}"
+  ERR_SAVING_DATA: "Error in saving data. {0}"
+  ERR_UPDATING_DATA: "Error in updating data. {0}"
+  ERR_DELETING_DATA: "Error in deleting data. {0}"
+  ERR_JSON_TRANFORMATION_FAILURE: "Tranformation Fails. {0}"
+  ERR_RESPONSE_NOT_FOUND: "No Response Received. {0}"
+  ERR_RESPONSE_BODY_NOT_FOUND: "Details not found. {0}"
+  ERR_AUTHENTICATION: "Unauthorized Access : {0}"
+  ERR_AUTH: "Adakjjad : {0}"
